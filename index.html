@@ -3,12 +3,12 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>语文笔记生成器 - 极速重生版</title>
+    <title>语文笔记生成器 - 智能直达版</title>
     <style>
         * { margin: 0; padding: 0; box-sizing: border-box; }
         body {
             font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            background: linear-gradient(135deg, #7b92b5 0%, #8b78e6 100%);
             min-height: 100vh;
             padding: 40px 20px;
             color: #333;
@@ -18,104 +18,101 @@
         header h1 { font-size: 2.5rem; margin-bottom: 10px; }
         header p { font-size: 1rem; opacity: 0.9; }
         
-        .search-card {
-            background: white;
-            border-radius: 20px;
-            padding: 30px;
-            box-shadow: 0 20px 40px rgba(0,0,0,0.1);
-            margin-bottom: 30px;
-        }
-        .input-group { display: flex; gap: 15px; flex-wrap: wrap; }
+        .search-card { background: white; border-radius: 20px; padding: 30px; box-shadow: 0 20px 40px rgba(0,0,0,0.1); margin-bottom: 30px; }
+        
+        /* 优化的输入框布局 */
+        .input-group { display: flex; flex-direction: column; gap: 15px; }
+        .input-row { display: flex; gap: 15px; width: 100%; }
         .input-group input {
             flex: 1; padding: 15px 20px; font-size: 1rem;
-            border: 2px solid #e0e0e0; border-radius: 12px; outline: none;
+            border: 2px solid #e0e0e0; border-radius: 12px; outline: none; transition: border-color 0.3s;
         }
-        .input-group input:focus { border-color: #667eea; }
+        .input-group input:focus { border-color: #8b78e6; }
         .input-group button {
-            padding: 15px 30px; font-size: 1rem;
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            color: white; border: none; border-radius: 12px; cursor: pointer; font-weight: bold;
-            transition: all 0.3s ease;
+            padding: 15px 30px; font-size: 1rem; white-space: nowrap;
+            background: linear-gradient(135deg, #8b78e6 0%, #6c5ce7 100%);
+            color: white; border: none; border-radius: 12px; cursor: pointer; font-weight: bold; transition: all 0.3s ease;
         }
         .input-group button:hover { opacity: 0.9; transform: translateY(-1px); }
         .input-group button:disabled { opacity: 0.6; cursor: not-allowed; transform: none; }
         
-        .warning { background: #fff3cd; color: #856404; padding: 12px; border-radius: 8px; margin-top: 15px; font-size: 0.85rem; text-align: center; }
+        .warning { background: #fff8e1; color: #f57f17; padding: 12px; border-radius: 8px; margin-top: 15px; font-size: 0.85rem; text-align: center; }
         .token-status { margin-top: 15px; padding: 10px; border-radius: 8px; font-size: 0.85rem; text-align: center; }
-        .token-ok { background: #d4edda; color: #155724; }
-        .token-missing { background: #f8d7da; color: #721c24; }
+        .token-ok { background: #e8f5e9; color: #2e7d32; }
+        .token-missing { background: #ffebee; color: #c62828; }
         
         .loading { background: white; border-radius: 20px; padding: 40px; text-align: center; display: none; }
-        .spinner {
-            width: 50px; height: 50px; border: 4px solid #f3f3f3; border-top: 4px solid #667eea;
-            border-radius: 50%; animation: spin 1s linear infinite; margin: 0 auto 20px;
-        }
+        .spinner { width: 50px; height: 50px; border: 4px solid #f3f3f3; border-top: 4px solid #8b78e6; border-radius: 50%; animation: spin 1s linear infinite; margin: 0 auto 20px; }
         @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
         
         .result-card { background: white; border-radius: 20px; overflow: hidden; display: none; box-shadow: 0 20px 40px rgba(0,0,0,0.1); }
         .result-header { background: #f8f9fa; padding: 20px 30px; border-bottom: 2px solid #e0e0e0; display: flex; justify-content: space-between; align-items: center; }
-        .copy-btn { padding: 10px 20px; background: #28a745; color: white; border: none; border-radius: 8px; cursor: pointer; font-weight: bold; }
+        .copy-btn { padding: 10px 20px; background: #52b788; color: white; border: none; border-radius: 8px; cursor: pointer; font-weight: bold; }
         
-        /* 模拟精美的 Obsidian 笔记渲染样式 */
-        .note-content { padding: 40px; line-height: 1.8; max-height: 700px; overflow-y: auto; font-family: 'PingFang SC', 'Microsoft YaHei', sans-serif; }
-        .markdown-table { width: 100%; border-collapse: collapse; margin: 15px 0; font-size: 0.95rem; }
-        .markdown-table th { background-color: #f2f4f8; font-weight: 600; padding: 10px; border: 1px solid #dee2e6; text-align: left; }
-        .markdown-table td { padding: 10px; border: 1px solid #dee2e6; }
-        .markdown-table tr:nth-child(even) { background-color: #f8f9fa; }
+        .note-content { padding: 40px; line-height: 1.8; max-height: 700px; overflow-y: auto; }
         
-        .error-card { background: #f8d7da; color: #721c24; padding: 20px; border-radius: 12px; display: none; margin-top: 20px; }
+        /* 🔥 完美复刻截图的绿色精美表格 */
+        .markdown-table { width: 100%; border-collapse: collapse; margin: 20px 0; font-size: 0.95rem; border: 1px solid #e0e0e0; }
+        .markdown-table th { background-color: #52b788; color: white; font-weight: 600; padding: 15px 10px; border: 1px solid #e0e0e0; text-align: left; }
+        .markdown-table td { padding: 12px 10px; border: 1px solid #e0e0e0; vertical-align: top; }
+        .markdown-table tr:nth-child(even) { background-color: #f1faee; } /* 浅绿色交替行 */
+        .markdown-table tr:hover { background-color: #e6f2eb; }
+        
+        .error-card { background: #ffebee; color: #c62828; padding: 20px; border-radius: 12px; display: none; margin-top: 20px; }
         .progress-info { margin-top: 10px; font-size: 0.85rem; color: #666; font-weight: bold; }
     </style>
 </head>
 <body>
     <div class="container">
         <header>
-            <h1>🌈 语文笔记生成器 · 颜值与实力版</h1>
-            <p>基于 GitHub Actions 自动化流 | 深度调用 AI 拒绝缓存</p>
+            <h1>🕷️ 语文笔记生成器 · AI智能版</h1>
+            <p>支持输入指定文章链接爬取 | 强制刷新无缓存</p>
         </header>
         
         <div class="search-card">
             <div class="input-group">
-                <input type="text" id="lessonName" placeholder="输入课文名称，例如：海底世界" />
-                <button id="generateBtn" onclick="generateNote()">🚀 重新生成笔记</button>
+                <div class="input-row">
+                    <input type="text" id="lessonName" placeholder="输入课文名称 (必填)，例如：海底世界升级版" />
+                    <button id="generateBtn" onclick="generateNote()">🚀 重新生成笔记</button>
+                </div>
+                <input type="text" id="lessonUrl" placeholder="输入指定原文链接 (选填)，例如：https://hanchacha.com/..." />
             </div>
             <div class="warning">
-                ⚡ 提示：由于 GitHub Actions 启动、爬取并让 AI 组织语言需要时间，整体耗时约 45~90 秒，请勿频繁重复点击。
+                ⚡ 提示：填入链接可精准抓取指定文章；若不填链接，则自动根据课文名称在网站内搜索。
             </div>
             <div id="tokenStatus" class="token-status token-missing">正在检测 Token...</div>
         </div>
         
         <div id="loading" class="loading">
             <div class="spinner"></div>
-            <p id="loadingText">📡 正在触发 GitHub Actions 爬虫...</p>
+            <p id="loadingText">📡 正在触发云端...</p>
             <div class="progress-info" id="progressInfo"></div>
         </div>
         
         <div id="resultCard" class="result-card">
             <div class="result-header">
-                <h2>📖 精美笔记已生成</h2>
-                <button class="copy-btn" onclick="copyNote()">📋 复制 Markdown 源码</button>
+                <h2>📖 笔记已生成</h2>
+                <button class="copy-btn" onclick="copyNote()">📋 复制 Markdown</button>
             </div>
             <div id="noteContent" class="note-content"></div>
         </div>
-        
         <div id="errorCard" class="error-card"></div>
     </div>
 
     <script>
         const REPO_OWNER = "finnlove";
         const REPO_NAME = "yuwen-note";
-        let rawMarkdown = ""; // 存储原始 Markdown 供复制使用
+        let rawMarkdown = "";
         
         function checkTokenStatus() {
             const token = localStorage.getItem('github_token');
             const statusDiv = document.getElementById('tokenStatus');
             if (token && token.startsWith('ghp_')) {
-                statusDiv.innerHTML = '✅ GitHub Token 已配置！准备就绪。';
+                statusDiv.innerHTML = '✅ GitHub Token 已配置，爬虫功能可用！每次都会重新生成。';
                 statusDiv.className = 'token-status token-ok';
                 return true;
             } else {
-                statusDiv.innerHTML = '⚠️ 未检测到有效 Token。请按 F12 在 Console 中输入：localStorage.setItem("github_token", "你的ghp_开头的Token")';
+                statusDiv.innerHTML = '⚠️ 未配置 Token。请按 F12 在 Console 输入：localStorage.setItem("github_token", "你的Token")';
                 statusDiv.className = 'token-status token-missing';
                 return false;
             }
@@ -123,38 +120,39 @@
         
         async function generateNote() {
             const lessonName = document.getElementById('lessonName').value.trim();
+            const lessonUrl = document.getElementById('lessonUrl').value.trim();
             const generateBtn = document.getElementById('generateBtn');
-            if (!lessonName) { alert('请输入课文名称！'); return; }
+            if (!lessonName) { alert('必须输入课文名称（用于保存文件名）！'); return; }
             
             generateBtn.disabled = true;
-            generateBtn.textContent = '⏳ 云端全力生成中...';
-            
+            generateBtn.textContent = '⏳ 生成中...';
             document.getElementById('loading').style.display = 'block';
             document.getElementById('resultCard').style.display = 'none';
             document.getElementById('errorCard').style.display = 'none';
             
             const token = localStorage.getItem('github_token');
             try {
-                if (!token) throw new Error('未配置 GitHub Token，请按提示配置。');
+                if (!token) throw new Error('Token缺失');
                 
-                // 1. 触发云端 Action
-                document.getElementById('loadingText').innerHTML = '📡 正在唤醒 GitHub Actions 云端虚拟服务器...';
-                const triggered = await triggerWorkflow(lessonName, token);
-                if (!triggered) throw new Error('唤醒云端失败，请检查 Token 权限（需要 actions:write 权限）');
+                // 【核心黑科技】：把名字和链接用 ||| 拼起来发给后端，避免修改 GitHub Action 配置
+                const payloadStr = lessonUrl ? `${lessonName}|||${lessonUrl}` : lessonName;
                 
-                // 2. 开始延长轮询（总共等待最多 4 分钟，给足 AI 喘息和爬虫时间）
-                document.getElementById('loadingText').innerHTML = '🕷️ 爬虫已在云端就位，正在疯狂抓取 hanchacha.com...';
-                const note = await pollForNewResult(lessonName, 60, 4000); // 60次 * 4秒 = 240秒
+                document.getElementById('loadingText').innerHTML = '📡 正在唤醒云端服务器...';
+                const triggered = await triggerWorkflow(payloadStr, token);
+                if (!triggered) throw new Error('唤醒云端失败，检查 Token 权限');
+                
+                document.getElementById('loadingText').innerHTML = lessonUrl ? '🎯 正在定点抓取您提供的链接...' : '🕷️ 正在自动搜索并抓取网页...';
+                const note = await pollForNewResult(lessonName, 60, 4000);
                 
                 if (note) {
                     rawMarkdown = note;
                     displayNote(note);
                     document.getElementById('loading').style.display = 'none';
                 } else {
-                    throw new Error('云端处理超时。可能原因：1. DeepSeek 接口响应慢；2. Actions 正在排队。请稍后刷新重试。');
+                    throw new Error('超时，请稍后刷新重试。');
                 }
             } catch (error) {
-                document.getElementById('errorCard').innerHTML = `❌ 发生错误: ${error.message}`;
+                document.getElementById('errorCard').innerHTML = `❌ ${error.message}`;
                 document.getElementById('errorCard').style.display = 'block';
                 document.getElementById('loading').style.display = 'none';
             } finally {
@@ -163,16 +161,12 @@
             }
         }
         
-        async function triggerWorkflow(lessonName, token) {
+        async function triggerWorkflow(payloadStr, token) {
             const url = `https://api.github.com/repos/${REPO_OWNER}/${REPO_NAME}/actions/workflows/crawl.yml/dispatches`;
             const response = await fetch(url, {
                 method: 'POST',
-                headers: {
-                    'Authorization': `token ${token}`,
-                    'Accept': 'application/vnd.github.v3+json',
-                    'Content-Type': 'application/json'
-                },
-                body: JSON.stringify({ ref: 'main', inputs: { lesson_name: lessonName } })
+                headers: { 'Authorization': `token ${token}`, 'Accept': 'application/vnd.github.v3+json', 'Content-Type': 'application/json' },
+                body: JSON.stringify({ ref: 'main', inputs: { lesson_name: payloadStr } })
             });
             return response.ok;
         }
@@ -180,23 +174,14 @@
         async function pollForNewResult(lessonName, maxAttempts, interval) {
             for (let i = 0; i < maxAttempts; i++) {
                 await new Promise(r => setTimeout(r, interval));
-                
-                // 动态更新状态，缓解等待焦虑
-                if (i > 8) document.getElementById('loadingText').innerHTML = '🤖 文本抓取成功！正在调用 DeepSeek AI 构建超强学霸笔记...';
-                if (i > 25) document.getElementById('loadingText').innerHTML = '✍️ AI 正在努力填满所有复杂的表格与字词库，请坚持住...';
-                
-                document.getElementById('progressInfo').innerHTML = `⏳ 进度：已等待 ${ (i*interval/1000).toFixed(0) } 秒 / 最大容忍 240 秒`;
-                
+                if (i > 8) document.getElementById('loadingText').innerHTML = '🤖 抓取成功！AI 正在按图纸排版表格...';
+                document.getElementById('progressInfo').innerHTML = `⏳ 等待 ${ (i*interval/1000).toFixed(0) } 秒 / 240 秒`;
                 try {
-                    // 使用实时时间戳彻底粉碎 GitHub CDN 缓存
                     const url = `https://raw.githubusercontent.com/${REPO_OWNER}/${REPO_NAME}/main/data/${encodeURIComponent(lessonName)}.md?t=${new Date().getTime()}`;
                     const response = await fetch(url, { cache: 'no-cache' });
                     if (response.ok) {
                         const note = await response.text();
-                        // 确保拿到的是全新生成的全量数据
-                        if (note && note.length > 500 && !note.includes('正在努力生成中')) {
-                            return note;
-                        }
+                        if (note && note.length > 500 && !note.includes('正在努力生成中')) return note;
                     }
                 } catch(e) {}
             }
@@ -204,7 +189,6 @@
         }
         
         function displayNote(note) {
-            // 增强版 Markdown 简易解析器：精准支持 Obsidian 彩虹风格及原生 HTML 表格转换
             let lines = note.split('\n');
             let htmlResult = "";
             let inTable = false;
@@ -212,45 +196,22 @@
             
             for (let line of lines) {
                 let trimmed = line.trim();
-                
-                // 处理表格标签
                 if (trimmed.startsWith('|')) {
-                    if (trimmed.includes('---')) continue; // 跳过分割线
+                    if (trimmed.includes('---')) continue;
                     inTable = true;
                     tableRows.push(trimmed);
                     continue;
                 } else {
-                    if (inTable) {
-                        htmlResult += renderCustomTable(tableRows);
-                        tableRows = [];
-                        inTable = false;
-                    }
+                    if (inTable) { htmlResult += renderCustomTable(tableRows); tableRows = []; inTable = false; }
                 }
                 
-                // 基础语法转换
-                if (trimmed.startsWith('# ')) {
-                    htmlResult += `<h1 style="color:#2b2d42; border-bottom:2px solid #667eea; padding-bottom:8px; margin:25px 0 15px;">${trimmed.replace('# ', '')}</h1>`;
-                } else if (trimmed.startsWith('## ')) {
-                    htmlResult += `<h2 style="color:#3a86ff; margin:20px 0 10px; font-size:1.4rem;">${trimmed.replace('## ', '')}</h2>`;
-                } else if (trimmed.startsWith('### ')) {
-                    htmlResult += `<h3 style="color:#8338ec; margin:15px 0 8px; font-size:1.15rem;">${trimmed.replace('### ', '')}</h3>`;
-                } else if (trimmed.startsWith('> ')) {
-                    htmlResult += `<blockquote style="background:#f1f5f9; border-left:5px solid #ff006e; padding:12px 20px; margin:15px 0; border-radius:4px; font-style:italic;">${trimmed.replace('> ', '')}</blockquote>`;
-                } else if (trimmed.startsWith('* ') || trimmed.startsWith('- ')) {
-                    let text = trimmed.replace(/^[\*\-]\s+/, '');
-                    // 加粗处理
-                    text = text.replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>');
-                    htmlResult += `<li style="margin-left:20px; margin-bottom:6px; list-style-type: disc;">${text}</li>`;
-                } else if (trimmed === '---') {
-                    htmlResult += `<hr style="border:0; height:1px; background:#e2e8f0; margin:30px 0;">`;
-                } else if (trimmed !== "") {
-                    let text = trimmed.replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>');
-                    htmlResult += `<p style="margin-bottom:12px;">${text}</p>`;
-                }
+                if (trimmed.startsWith('# ')) { htmlResult += `<h1 style="color:#2b2d42; margin:25px 0 15px;">${trimmed.replace('# ', '')}</h1>`; }
+                else if (trimmed.startsWith('## ')) { htmlResult += `<h2 style="background-color:#52b788; color:white; padding:8px 15px; border-radius:5px; margin:25px 0 15px; display:inline-block;">${trimmed.replace('## ', '')}</h2><br>`; }
+                else if (trimmed.startsWith('### ')) { htmlResult += `<h3 style="color:#2d6a4f; margin:15px 0 8px;">${trimmed.replace('### ', '')}</h3>`; }
+                else if (trimmed.startsWith('> ')) { htmlResult += `<blockquote style="background:#f1faee; border-left:5px solid #52b788; padding:12px 20px; margin:15px 0; border-radius:4px;">${trimmed.replace('> ', '')}</blockquote>`; }
+                else if (trimmed !== "") { htmlResult += `<p style="margin-bottom:12px;">${trimmed.replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')}</p>`; }
             }
-            
             if (inTable) htmlResult += renderCustomTable(tableRows);
-            
             document.getElementById('noteContent').innerHTML = htmlResult;
             document.getElementById('resultCard').style.display = 'block';
         }
@@ -261,24 +222,11 @@
             rows.forEach((row, index) => {
                 let cells = row.split('|').map(c => c.trim()).filter((c, i, arr) => i > 0 && i < arr.length - 1);
                 html += '<tr>';
-                cells.forEach(cell => {
-                    if (index === 0) {
-                        html += `<th>${cell}</th>`;
-                    } else {
-                        html += `<td>${cell}</td>`;
-                    }
-                });
+                cells.forEach(cell => { html += index === 0 ? `<th>${cell}</th>` : `<td>${cell.replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')}</td>`; });
                 html += '</tr>';
             });
-            html += '</table>';
-            return html;
+            return html + '</table>';
         }
-        
-        function copyNote() {
-            navigator.clipboard.writeText(rawMarkdown);
-            alert('✅ 原始 Markdown 代码已完美复制，快去贴进你的 Obsidian 吧！');
-        }
-        
         checkTokenStatus();
     </script>
 </body>
