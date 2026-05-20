@@ -2,32 +2,25 @@
 import requests
 import sys
 import os
-import time
 import re
 from bs4 import BeautifulSoup
 
 DEEPSEEK_API_KEY = os.environ.get("DEEPSEEK_API_KEY", "")
 
 def crawl_direct_url(url):
-    """直接爬取用户指定的 URL"""
     print(f"  🎯 检测到指定链接，正在定点抓取: {url}")
-    headers = {
-        'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36'
-    }
+    headers = {'User-Agent': 'Mozilla/5.0'}
     try:
         response = requests.get(url, headers=headers, timeout=15)
         soup = BeautifulSoup(response.text, 'html.parser')
-        # 尝试获取主体内容
         content_div = soup.find('article') or soup.find('div', class_='entry-content') or soup.find('body')
         if content_div:
-            text = content_div.get_text(separator='\n', strip=True)
-            return text[:4000]
+            return content_div.get_text(separator='\n', strip=True)[:4000]
     except Exception as e:
         print(f"  ❌ 直接抓取失败: {e}")
     return ""
 
 def crawl_hanchacha(lesson_name):
-    """自动搜索 hanchacha.com"""
     print(f"  🔍 正在搜索《{lesson_name}》...")
     all_text = ""
     headers = {'User-Agent': 'Mozilla/5.0'}
@@ -45,9 +38,9 @@ def crawl_hanchacha(lesson_name):
     return all_text[:4000]
 
 def generate_with_ai(lesson_name, raw_materials):
-    """调用 AI 生成带【课文原句】的精美笔记"""
     if not DEEPSEEK_API_KEY:
-        return generate_fallback_note(lesson_name)
+        print("  ❌ 致命错误：完全没有读到 DEEPSEEK_API_KEY！(是不是 Secrets 名字拼错了？)")
+        return f"# {lesson_name}\n\n> ⚠️ 找不到 API 钥匙，请检查 GitHub Secrets 配置。"
     
     try:
         print("  🤖 正在调用 DeepSeek (严格遵循新表格排版)...")
@@ -93,24 +86,24 @@ def generate_with_ai(lesson_name, raw_materials):
             json={"model": "deepseek-chat", "messages": [{"role": "user", "content": prompt}], "temperature": 0.4},
             timeout=120
         )
+        
         if response.status_code == 200:
+            print("  ✅ AI 生成成功！完美拿到了数据！")
             return response.json()["choices"][0]["message"]["content"]
         else:
-            return generate_fallback_note(lesson_name)
-    except:
-        return generate_fallback_note(lesson_name)
-
-def generate_fallback_note(lesson_name):
-    return f"# {lesson_name}\n\n> ⚠️ AI 调用超时，请稍后重试。"
+            print(f"  ❌ DeepSeek 拒绝了请求！状态码: {response.status_code}")
+            print(f"  ❌ 详细原因: {response.text}")
+            return f"# {lesson_name}\n\n> ⚠️ AI 报错啦！状态码 {response.status_code}，请去 GitHub Actions 查看黑框里的详细原因。"
+            
+    except Exception as e:
+        print(f"  ❌ 网络异常崩溃: {e}")
+        return f"# {lesson_name}\n\n> ⚠️ 请求报错: {e}"
 
 def main():
     if len(sys.argv) < 2:
         sys.exit(1)
-    
-    # 接收前端传来的合并字符串
     raw_input = sys.argv[1]
     
-    # 【核心逻辑】：拆分名字和网址
     if "|||" in raw_input:
         lesson_name, target_url = raw_input.split("|||")
     else:
@@ -119,7 +112,6 @@ def main():
         
     print(f"🕷️ 任务启动: 名称 [{lesson_name}]")
     
-    # 如果有指定网址，就直接爬；没有就去搜
     if target_url and target_url.startswith("http"):
         scraped_text = crawl_direct_url(target_url)
     else:
@@ -128,9 +120,7 @@ def main():
     note = generate_with_ai(lesson_name, scraped_text)
     
     os.makedirs('data', exist_ok=True)
-    # 文件名依然使用干净的课文名称
     output_file = f"data/{lesson_name}.md"
-    
     with open(output_file, 'w', encoding='utf-8') as f:
         f.write(note)
 
